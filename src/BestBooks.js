@@ -4,11 +4,15 @@ import Carousel from "react-bootstrap/Carousel";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
+import UpdateForm from "./UpdateForm";
 class BestBooks extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       books: [],
+      show : false,
+      showUp: false,
+      crtBook :{}
     };
   }
   addBook = (event) => {
@@ -26,6 +30,7 @@ class BestBooks extends React.Component {
         this.setState({
           books: result.data,
         });
+        this.handleClose();
       })
       .catch((err) => {
         console.log(err);
@@ -46,6 +51,7 @@ class BestBooks extends React.Component {
   handleClose = () => {
     this.setState({
       show: false,
+      showUp: false
     });
   };
   handleShow = () => {
@@ -53,6 +59,38 @@ class BestBooks extends React.Component {
       show: true,
     });
   };
+  openForm =(Element)=>{
+
+    this.setState({
+      showUp: true,
+      crtBook : Element
+
+    });
+  }
+  handleUpdate =(event) =>{
+   
+    event.preventDefault();
+    console.log("hi")
+    const id = this.state.crtBook._id;
+ let obj ={
+  title: event.target.title.value,
+  description: event.target.description.value,
+  status: event.target.status.value,
+ }
+ axios
+ .put(`${process.env.REACT_APP_URL}book/${id}`,obj)
+ .then((result) => {
+  console.log(result.data);
+  this.setState({
+    books: result.data,
+  });
+  this.handleClose();
+})
+.catch((err) => {
+  console.log(err);
+});
+
+  }
   /* TODO: Make a GET request to your API to fetch all the books from the database  */
   componentDidMount = () => {
     axios
@@ -119,7 +157,7 @@ class BestBooks extends React.Component {
             </Modal.Footer>
           </Modal>
         </div>
-        {this.state.books.length ? (
+        {this.state.books.length ? (<div>
           <Carousel>
             {this.state.books.map((Element) => {
               return (
@@ -134,16 +172,31 @@ class BestBooks extends React.Component {
                     <p>{Element.description}</p>
                     <h3>{Element.status}</h3>
                     <Button
-                      variant="secondary"
+                      variant="danger"
                       onClick={() => this.deleteBook(Element._id)}
+                      style={{ margin :'10px' }}
                     >
                       Delete
+                    </Button>
+                    <Button
+                      variant="warning"
+                      onClick={()=>this.openForm(Element)}
+                    >
+                      update
                     </Button>
                   </Carousel.Caption>
                 </Carousel.Item>
               );
             })}{" "}
+          
           </Carousel>
+            <UpdateForm
+        showUp = {this.state.showUp}
+        handleClose = {this.handleClose}
+        handleUpdate= {this.handleUpdate}
+        crtBook = {this.state.crtBook}
+        />
+        </div>
         ) : (
           <h3>No Books Found :(</h3>
         )}
