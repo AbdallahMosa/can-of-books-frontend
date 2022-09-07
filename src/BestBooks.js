@@ -5,6 +5,7 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 import UpdateForm from "./UpdateForm";
+import { withAuth0 } from '@auth0/auth0-react';
 class BestBooks extends React.Component {
   constructor(props) {
     super(props);
@@ -12,15 +13,18 @@ class BestBooks extends React.Component {
       books: [],
       show : false,
       showUp: false,
-      crtBook :{}
+      crtBook :{},
+      email : ""
     };
   }
   addBook = (event) => {
     event.preventDefault();
+    const { user } = this.props.auth0;
     const obj = {
       title: event.target.title.value,
       description: event.target.description.value,
       status: event.target.status.value,
+      email : user.email
     };
     console.log("hiii");
     console.log(obj);
@@ -37,8 +41,10 @@ class BestBooks extends React.Component {
       });
   };
   deleteBook = (id) => {
+    const { user } = this.props.auth0;
+    let email =user.email
     axios
-      .delete(`${process.env.REACT_APP_URL}deleteBook/${id}`)
+      .delete(`${process.env.REACT_APP_URL}deleteBook/${id}?email=${email}`)
       .then((result) => {
         this.setState({
           books: result.data,
@@ -68,7 +74,8 @@ class BestBooks extends React.Component {
     });
   }
   handleUpdate =(event) =>{
-   
+    const { user } = this.props.auth0;
+    let email =user.email
     event.preventDefault();
     console.log("hi")
     const id = this.state.crtBook._id;
@@ -76,9 +83,10 @@ class BestBooks extends React.Component {
   title: event.target.title.value,
   description: event.target.description.value,
   status: event.target.status.value,
+  
  }
  axios
- .put(`${process.env.REACT_APP_URL}book/${id}`,obj)
+ .put(`${process.env.REACT_APP_URL}book/${id}?email=${email}`,obj)
  .then((result) => {
   console.log(result.data);
   this.setState({
@@ -93,8 +101,11 @@ class BestBooks extends React.Component {
   }
   /* TODO: Make a GET request to your API to fetch all the books from the database  */
   componentDidMount = () => {
+    const { user } = this.props.auth0;
+    let email =user.email
+    console.log(email)
     axios
-      .get(`${process.env.REACT_APP_URL}books`)
+      .get(`${process.env.REACT_APP_URL}books?email=${email}`)
       .then((result) => {
         console.log(result.data);
         this.setState({
@@ -107,8 +118,10 @@ class BestBooks extends React.Component {
   };
   render() {
     /* TODO: render all the books in a Carousel */
+     
     return (
       <>
+  
         <h2>My Essential Lifelong Learning &amp; Formation Shelf</h2>
         <div>
           {" "}
@@ -204,4 +217,4 @@ class BestBooks extends React.Component {
     );
   }
 }
-export default BestBooks;
+export default withAuth0(BestBooks);
